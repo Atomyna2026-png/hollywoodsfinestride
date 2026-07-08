@@ -620,19 +620,50 @@ function renderSummary(targetId){
 
 function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-/* ---------- Submit request (demo) ---------- */
-function submitRequest(){
+/* ---------- Submit request (sends booking via Formspree) ---------- */
+const FORM_ENDPOINT = 'https://formspree.io/f/xykqqzkg';
+
+async function submitRequest(){
   const btn = document.getElementById('confirmBtn');
   btn.disabled = true;
   btn.textContent = 'Sending…';
-  setTimeout(() => {
-    btn.disabled = false;
-    btn.textContent = 'Request Reservation';
-    const code = 'HFR-' + Math.floor(1000 + Math.random() * 9000);
+
+  const v = VEHICLES.find(x => x.id === state.vehicle);
+  const code = 'HFR-' + Math.floor(1000 + Math.random() * 9000);
+
+  const booking = {
+    _subject: 'New Ride Booking ' + code + ' — ' + val('name'),
+    'Booking Code': code,
+    'Trip Type': state.tripType === 'oneway' ? 'One-Way' : 'Hourly Charter',
+    'Vehicle': v.name,
+    'Pickup': val('pickup'),
+    'Drop-off': state.tripType === 'oneway' ? val('dropoff') : 'N/A (hourly)',
+    'Charter Hours': state.tripType === 'hourly' ? val('hours') : 'N/A',
+    'Date': val('date'),
+    'Pickup Time': val('time'),
+    'Passengers': val('pax'),
+    'Customer Name': val('name'),
+    'Phone': val('phone'),
+    'email': val('email'),
+    'Special Requests': val('notes') || 'None'
+  };
+
+  try {
+    const res = await fetch(FORM_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(booking)
+    });
+    if (!res.ok) throw new Error('send failed');
     document.getElementById('bookingCode').textContent = code;
     renderSummary('confirmSummary');
     showStep(5);
-  }, 1200);
+  } catch (err) {
+    alert('Sorry, we could not send your request. Please try again, or call us at (818) 271-9917.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Request Reservation';
+  }
 }
 
 /* ---------- Misc ---------- */
