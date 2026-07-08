@@ -124,9 +124,8 @@ main{flex:1;display:flex;min-height:0}
 /* ---------- Mini fleet on Book page ---------- */
 .mini-fleet{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:44px}
 .mini-card{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.mini-photo{height:210px;overflow:hidden}
-.mini-photo img{width:100%;height:100%;object-fit:cover;display:block}
-.mini-photo.sedan img{object-position:center 58%}
+.mini-photo{height:280px;overflow:hidden;background:#141414}
+.mini-photo img{width:100%;height:100%;object-fit:contain;display:block}
 .mini-bar{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:.9rem 1.2rem}
 .mini-bar h3{font-size:.92rem;letter-spacing:.06em}
 .mini-bar small{display:block;font-family:'Jost',sans-serif;font-size:.72rem;color:var(--grey);letter-spacing:.05em;margin-top:.15rem}
@@ -140,11 +139,10 @@ main{flex:1;display:flex;min-height:0}
 .fleet-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;max-width:960px;margin:0 auto}
 .fleet-card{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
 .photo-slot{
-  height:250px;background:repeating-linear-gradient(45deg,#f1eee8 0 14px,#eae6de 14px 28px);
+  height:300px;background:#141414;
   display:grid;place-items:center;border-bottom:1px solid var(--line-soft);overflow:hidden;
 }
-.photo-slot img{width:100%;height:100%;object-fit:cover;display:block}
-#photo-sedan img{object-position:center 58%}
+.photo-slot img{width:100%;height:100%;object-fit:contain;display:block}
 .photo-slot .ph-label{font-size:.68rem;letter-spacing:.26em;text-transform:uppercase;color:#9a958b;text-align:center;padding:0 1rem}
 .fleet-body{padding:1.3rem 1.4rem 1.5rem}
 .fleet-body h3{font-size:1.05rem}
