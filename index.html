@@ -342,21 +342,19 @@ footer{border-top:1px solid var(--line);padding:1rem 22px;text-align:center;font
         <!-- STEP 4 -->
         <div class="ticket-body" id="step4" style="display:none">
           <div class="summary" id="reviewSummary"></div>
-          <p style="font-size:.76rem;opacity:.65;margin-bottom:.9rem">Submit your request and our dispatch team will confirm your reservation and fare by phone or email — usually within the hour.</p>
-          <button class="btn-main" id="confirmBtn" onclick="submitRequest()">Request Reservation</button>
+          <p style="font-size:.76rem;opacity:.65;margin-bottom:.9rem">Submit your request and our dispatch team will text your confirmed fare to your phone — usually within minutes.</p>
+          <button class="btn-main" id="confirmBtn" onclick="submitRequest()">Request a Price</button>
           <button class="btn-ghost" onclick="goStep(3)">← Back to details</button>
         </div>
 
         <!-- STEP 5 -->
         <div class="confirm" id="step5" style="display:none">
           <div class="check">✓</div>
-          <h3>REQUEST RECEIVED</h3>
-          <p>Thank you — your reservation request is in. Tap <strong>Request a Price</strong> below and our dispatch team will text your confirmed fare to your phone. Then pay online from the <a href="#" onclick="showTab('pay');return false;" style="text-decoration:underline">Pay</a> page.</p>
+          <h3>PRICE REQUESTED</h3>
+          <p id="confirmMsg">Thank you — your booking and price request are in. Our dispatch team will text your confirmed fare to your phone shortly. Then pay online from the <a href="#" onclick="showTab('pay');return false;" style="text-decoration:underline">Pay</a> page.</p>
           <div class="booking-code" id="bookingCode">HFR-0000</div>
           <div class="summary" id="confirmSummary" style="text-align:left"></div>
-          <button class="btn-main" id="priceBtn" onclick="requestPrice()" style="margin-bottom:.5rem">Request a Price</button>
-          <p id="priceNote" style="display:none;font-size:.8rem;color:#2e6e39;margin-bottom:.8rem"></p>
-          <button class="btn-ghost" onclick="resetBooking()">Book Another Ride</button>
+          <button class="btn-main" onclick="resetBooking()">Book Another Ride</button>
         </div>
 
         <div class="ticket-foot" id="ticketFoot">Your fare is calculated for your exact trip and confirmed with you before your ride. Questions? Call or text <a href="tel:+18182719917" style="text-decoration:underline">(818) 271-9917</a>.</div>
@@ -603,8 +601,10 @@ async function submitRequest(){
   const code = 'HFR-' + Math.floor(1000 + Math.random() * 9000);
 
   const booking = {
-    _subject: 'New Ride Booking ' + code + ' — ' + val('name'),
+    _subject: '💰 PRICE REQUEST ' + code + ' — text fare to ' + val('phone'),
+    'ACTION': 'Customer is waiting — please TEXT the confirmed fare to their phone.',
     'Booking Code': code,
+    'Text Fare To (Phone)': val('phone'),
     'Trip Type': state.tripType === 'oneway' ? 'One-Way' : 'Hourly Charter',
     'Vehicle': v.name,
     'Pickup': val('pickup'),
@@ -614,7 +614,6 @@ async function submitRequest(){
     'Pickup Time': val('time'),
     'Passengers': val('pax'),
     'Customer Name': val('name'),
-    'Phone': val('phone'),
     'email': val('email'),
     'Special Requests': val('notes') || 'None'
   };
@@ -628,65 +627,14 @@ async function submitRequest(){
     if (!res.ok) throw new Error('send failed');
     document.getElementById('bookingCode').textContent = code;
     renderSummary('confirmSummary');
-
-    // Remember this booking so "Request a Price" can reference it
-    lastBooking = {
-      code: code,
-      vehicle: v.name,
-      trip: state.tripType === 'oneway'
-        ? val('pickup') + ' → ' + val('dropoff')
-        : val('hours') + '-hr charter from ' + val('pickup'),
-      date: val('date') + ' at ' + val('time'),
-      name: val('name'),
-      phone: val('phone'),
-      email: val('email')
-    };
-    const pb = document.getElementById('priceBtn');
-    pb.disabled = false; pb.textContent = 'Request a Price'; pb.style.display = '';
-    document.getElementById('priceNote').style.display = 'none';
-
+    document.getElementById('confirmMsg').innerHTML =
+      'Thank you — your booking and price request are in. Our dispatch team will text your confirmed fare to <strong>' + escapeHtml(val('phone')) + '</strong> shortly. Then pay online from the <a href="#" onclick="showTab(\'pay\');return false;" style="text-decoration:underline">Pay</a> page.';
     showStep(5);
   } catch (err) {
     alert('Sorry, we could not send your request. Please try again, or call us at (818) 271-9917.');
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Request Reservation';
-  }
-}
-
-/* ---------- Request a Price (auto-notifies dispatch) ---------- */
-let lastBooking = null;
-
-async function requestPrice(){
-  if (!lastBooking) return;
-  const btn = document.getElementById('priceBtn');
-  btn.disabled = true;
-  btn.textContent = 'Sending…';
-  try {
-    const res = await fetch(FORM_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        _subject: '💰 PRICE REQUEST ' + lastBooking.code + ' — text fare to ' + lastBooking.phone,
-        'Request': 'Customer is waiting for a price — please TEXT the fare to their phone.',
-        'Booking Code': lastBooking.code,
-        'Customer Name': lastBooking.name,
-        'Text Fare To (Phone)': lastBooking.phone,
-        'Vehicle': lastBooking.vehicle,
-        'Trip': lastBooking.trip,
-        'Date': lastBooking.date,
-        'email': lastBooking.email
-      })
-    });
-    if (!res.ok) throw new Error('send failed');
-    btn.style.display = 'none';
-    const note = document.getElementById('priceNote');
-    note.textContent = '✓ Price requested — we\u2019ll text your fare to ' + lastBooking.phone + ' shortly.';
-    note.style.display = 'block';
-  } catch (err) {
-    btn.disabled = false;
     btn.textContent = 'Request a Price';
-    alert('Sorry, the request didn\u2019t go through. Please try again or call (818) 271-9917.');
   }
 }
 
